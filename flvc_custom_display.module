@@ -1,0 +1,142 @@
+<?php
+/**
+ * @file
+ * A block that displays collection information when the user performs a blank search
+ */
+
+/**
+* Implements hook_help.
+*
+* Displays help and module information.
+*
+* @param path
+*   Which path of the site we're using to display help
+* @param arg
+*   Array that holds the current path as returned from arg() function
+*/
+function flvc_custom_display_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#flvc_custom_display":
+      return '<p>' . t("Displays collection information related to an empty search") . '</p>';
+      break;
+  }
+}
+
+/**
+* Implements hook_block_info().
+*/
+function flvc_custom_display_block_info() {
+  $blocks['flvc_custom_display'] = array(
+    'info' => t('Collection Information in Search'), //The name that will appear in the block list.
+    'cache' => DRUPAL_CACHE_PER_ROLE, //Default
+  );
+  return $blocks;
+}
+
+/**
+* Get Collection Object function.
+*
+* Get the collection objectId from the URL and retrive the object from the Fedora repository
+*
+* @return
+*   The collection object
+*/
+function flvc_custom_display_get_collection_information(){
+  
+  global $base_url;
+
+  $exists = false;
+  $desc_text = false;
+  $collection_id = NULL;
+  $collection = array();
+  $collection['name'] = 'Not a Collection';
+
+  if (isset($_GET['collection']))
+  {
+    $collection_id = $_GET['collection'];
+  }
+
+  if ($collection_id)
+  {
+    //create DC datastream URL
+    $collection['dc_url'] = $base_url . '/islandora/object/' . $collection_id . '/datastream/DC/';
+
+    //retrieve the DC databsteam
+    $dc = file_get_contents($collection['dc_url']);
+
+    //convert DC into an object
+    $collection['dc_object'] = DublinCore::importFromXMLString($dc);
+
+    //if the Dublin Core exists, retrieve the collection name
+    if($collection['dc_object'])
+    {
+      $dc_object_array = $collection['dc_object']->asArray();
+      $collection['name'] = $dc_object_array['dc:title']['value'];
+    }
+   
+    //create DESC-TEXT datastream URL
+    $collection['description_url'] = $base_url . '/islandora/object/' . $collection_id . '/datastream/DESC-TEXT/';
+ 
+    //Check if the DESC-TEXT datastream exists
+    $datastream_headers = @get_headers($collection['description_url']);
+    if($datastream_headers[0] == 'HTTP/1.1 404 Not Found') {
+      $exists = false;
+    }
+    else {
+      $exists = true;
+    }    
+
+    //Try to retrieve the description text datastream
+    if($exists)
+    {
+      $desc_text = @file_get_contents($collection['description_url']);
+    }
+
+    if ($desc_text)
+    {
+      $collection['description_text'] = $desc_text;
+    }
+    else
+    {
+      $collection['description_text'] = '';
+    }
+  }
+
+  return $collection;
+}
+
+/**
+* Implements hook_block_view().
+*
+* Prepares the contents of the block.
+*/
+function flvc_custom_display_block_view($delta = '') {
+  switch($delta){
+    case 'flvc_custom_display':
+      if(user_access('access content')){
+        //Use custom function to retrieve collection information.
+        $collection_info = flvc_custom_display_get_collection_information();
+     
+        if ($collection_info) { //Found collection, send to theme.
+  
+          $block['subject'] = t($collection_info['name']);
+        
+          $block['content'] =  
+          theme('html_tag', array(
+            'element' => array(
+              '#tag' => 'p',
+                '#attributes' => array(
+                  'class' => 'collection-description',
+                ),
+              '#value' => $collection_info['description_text'],
+            ),
+          ));
+        }
+        else {
+          //No Collection Info
+          $block['content'] = t('Unable to retrieve collection information');
+        }
+      }
+    return $block;
+  }
+}
