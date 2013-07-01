@@ -80,14 +80,14 @@ function flvc_custom_display_get_collection_information(){
     //Check if the DESC-TEXT datastream exists
     $datastream_headers = @get_headers($collection['description_url']);
     if($datastream_headers[0] == 'HTTP/1.1 404 Not Found') {
-      $exists = false;
+      $desc_exists = false;
     }
     else {
-      $exists = true;
+      $desc_exists = true;
     }    
 
     //Try to retrieve the description text datastream
-    if($exists)
+    if($desc_exists)
     {
       $desc_text = @file_get_contents($collection['description_url']);
     }
@@ -99,6 +99,33 @@ function flvc_custom_display_get_collection_information(){
     else
     {
       $collection['description_text'] = '';
+    }
+
+    //create BANNER datastream URL
+    $collection['banner_url'] = $base_url . '/islandora/object/' . $collection_id . '/datastream/BANNER/view';
+ 
+    //Check if the BANNER datastream exists
+    $datastream_headers = @get_headers($collection['banner_url']);
+    if($datastream_headers[0] == 'HTTP/1.1 404 Not Found') {
+      $banner_exists = false;       
+    }
+    else {
+      $banner_exists = true;       
+    }
+
+    //Try to retrieve the banner datastream
+    if($banner_exists)   
+    {
+      $banner = @file_get_contents($collection['banner_url']);
+    }
+
+    if ($banner)
+    {
+      $collection['banner'] = $banner;
+    }
+    else
+    {
+      $collection['banner'] = '';
     }
   }
 
@@ -119,10 +146,9 @@ function flvc_custom_display_block_view($delta = '') {
      
         if ($collection_info) { //Found collection, send to theme.
   
-          $block['subject'] = t($collection_info['name']);
-        
-          $block['content'] =  
-          theme('html_tag', array(
+          $formatted_banner = theme('image', array('path' => $collection_info['banner_url']));
+
+          $formatted_description = theme('html_tag', array(
             'element' => array(
               '#tag' => 'p',
                 '#attributes' => array(
@@ -131,7 +157,17 @@ function flvc_custom_display_block_view($delta = '') {
               '#value' => $collection_info['description_text'],
             ),
           ));
-        }
+
+          if($collection_info['banner'] != '')
+          {
+            $block['content'] = '<p>' . $formatted_banner . '</p>' . $formatted_description;
+          }
+          else
+          {
+            $block['subject'] = t($collection_info['name']);
+            $block['content'] = $formatted_description;
+          }     
+        } 
         else {
           //No Collection Info
           $block['content'] = t('Unable to retrieve collection information');
