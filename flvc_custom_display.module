@@ -147,17 +147,8 @@ function flvc_custom_display_block_view($delta = '') {
         if ($collection_info) { //Found collection, send to theme.
   
           $formatted_banner = theme('image', array('path' => $collection_info['banner_url']));
-
-          $formatted_description = theme('html_tag', array(
-            'element' => array(
-              '#tag' => 'p',
-                '#attributes' => array(
-                  'class' => 'collection-description',
-                ),
-              '#value' => $collection_info['description_text'],
-            ),
-          ));
-
+          $formatted_description = t($collection_info['description_text']);
+           
           if($collection_info['banner'] != '')
           {
             $block['content'] = '<p>' . $formatted_banner . '</p>' . $formatted_description;
