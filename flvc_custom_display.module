@@ -45,6 +45,7 @@ function flvc_custom_display_get_collection_information(){
   
   global $base_url;
 
+  $banner = '';
   $exists = false;
   $desc_text = false;
   $collection_id = NULL;
@@ -98,7 +99,7 @@ function flvc_custom_display_get_collection_information(){
     }
     else
     {
-      $collection['description_text'] = '';
+      $collection['description_text'] = '&nbsp;';
     }
 
     //create BANNER datastream URL
@@ -106,28 +107,13 @@ function flvc_custom_display_get_collection_information(){
  
     //Check if the BANNER datastream exists
     $datastream_headers = @get_headers($collection['banner_url']);
-    if($datastream_headers[0] == 'HTTP/1.1 404 Not Found') {
-      $banner_exists = false;       
+    if(strpos($datastream_headers[0], '200') === false) {
+      $collection['banner_exists'] = false;       
     }
     else {
-      $banner_exists = true;       
+      $collection['banner_exists'] = true;       
     }
-
-    //Try to retrieve the banner datastream
-    if($banner_exists)   
-    {
-      $banner = @file_get_contents($collection['banner_url']);
-    }
-
-    if ($banner)
-    {
-      $collection['banner'] = $banner;
-    }
-    else
-    {
-      $collection['banner'] = '';
-    }
-  }
+}
 
   return $collection;
 }
@@ -146,16 +132,24 @@ function flvc_custom_display_block_view($delta = '') {
      
         if ($collection_info) { //Found collection, send to theme.
   
-          $formatted_banner = theme('image', array('path' => $collection_info['banner_url']));
+          if($collection_info['banner_exists'])
+          { 
+            $formatted_banner = theme('image', array('path' => $collection_info['banner_url']));
+          }
+          else
+          {
+            $formatted_banner = t($collection_info['name']);
+          }     
+
           $formatted_description = t($collection_info['description_text']);
            
-          if($collection_info['banner'] != '')
+          if($collection_info['banner_exists'])
           {
             $block['content'] = '<p>' . $formatted_banner . '</p>' . $formatted_description;
           }
           else
           {
-            $block['subject'] = t($collection_info['name']);
+            $block['subject'] = $formatted_banner;
             $block['content'] = $formatted_description;
           }     
         } 
