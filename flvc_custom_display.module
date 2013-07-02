@@ -51,10 +51,12 @@ function flvc_custom_display_get_collection_information(){
   $collection_id = NULL;
   $collection = array();
   $collection['name'] = 'Not a Collection';
+  $collection['base_url'] = $base_url;
 
   if (isset($_GET['collection']))
   {
     $collection_id = $_GET['collection'];
+    $collection['id'] = $collection_id;
   }
 
   if ($collection_id)
@@ -132,6 +134,20 @@ function flvc_custom_display_block_view($delta = '') {
      
         if ($collection_info) { //Found collection, send to theme.
   
+          $search_form =       
+
+            '<div id="local-search-container">
+              <h2 class="local-collection-search-title">Search this Collection</h2>
+              <form id="local-collection-search-form" accept-charset="UTF-8" onsubmit="return makeURL(\'local-collection-search-form\');" method="get" action="#">
+                <div class="form-item">
+                  <input class="search-input-text" type="text" maxlength="128" name="islandora_simple_search_query" />
+                  <input type="submit" name="submit" value="search"  class="form-submit" />
+                </div>
+                  <input type="hidden" name="islandora_simple_collection" value="' . $collection_info['id'] . '">
+                  <input type="hidden" name="base_url" value="' . $collection_info['base_url'] . '">
+                </form>
+             </div>';
+
           if($collection_info['banner_exists'])
           { 
             $formatted_banner = theme('image', array('path' => $collection_info['banner_url']));
@@ -145,12 +161,12 @@ function flvc_custom_display_block_view($delta = '') {
            
           if($collection_info['banner_exists'])
           {
-            $block['content'] = '<p>' . $formatted_banner . '</p>' . $formatted_description;
+            $block['content'] = '<p>' . $formatted_banner . '</p>' . $search_form . $formatted_description;
           }
           else
           {
             $block['subject'] = $formatted_banner;
-            $block['content'] = $formatted_description;
+            $block['content'] = $search_form . $formatted_description;
           }     
         } 
         else {
