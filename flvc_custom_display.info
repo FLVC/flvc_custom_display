@@ -1,3 +1,4 @@
 name = FLVC Custom Display
+package = FLVC Islandora
 description = A module that contains various display overrides for the FLVC implementation of Islandora
 core = 7.x
