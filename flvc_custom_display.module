@@ -61,6 +61,10 @@ function flvc_custom_display_get_collection_information(){
 
   if ($collection_id)
   {
+    // load object and get the collection name
+    $collection_object = islandora_object_load($collection_id);
+    $collection['name'] = $collection_object->label;
+
     //create DC datastream URL
     $collection['dc_url'] = $base_url . '/islandora/object/' . $collection_id . '/datastream/DC/';
 
@@ -74,7 +78,6 @@ function flvc_custom_display_get_collection_information(){
     if($collection['dc_object'])
     {
       $dc_object_array = $collection['dc_object']->asArray();
-      $collection['name'] = $dc_object_array['dc:title']['value'];
     }
    
     //create DESC-TEXT datastream URL
