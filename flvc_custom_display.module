@@ -93,7 +93,8 @@ function flvc_custom_display_get_collection_information(){
     }    
 
     //Try to retrieve the description text datastream
-    if($desc_exists)
+    //if($desc_exists)
+    if (isset($collection_object['DESC-TEXT']))
     {
       //$desc_text = @file_get_contents($collection['description_url']);
       $desc_text = $collection_object['DESC-TEXT']->content;
