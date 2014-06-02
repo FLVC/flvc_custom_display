@@ -69,7 +69,8 @@ function flvc_custom_display_get_collection_information(){
     $collection['dc_url'] = $base_url . '/islandora/object/' . $collection_id . '/datastream/DC/';
 
     //retrieve the DC databsteam
-    $dc = file_get_contents($collection['dc_url']);
+    //$dc = file_get_contents($collection['dc_url']);
+    $dc = $collection_object['DC']->content;
 
     //convert DC into an object
     $collection['dc_object'] = DublinCore::importFromXMLString($dc);
