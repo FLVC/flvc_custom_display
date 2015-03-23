@@ -12,7 +12,7 @@ function create_related_links_html($islandora_object) {
   $related_links_xml_object = simplexml_load_string($islandora_object['RELATED-LINKS']->content);
   
   if ($related_links_xml_object === false) {
-    echo "Failed loading XML\n";
+    echo "Failed loading XML<br /><br />Error: ";
     foreach(libxml_get_errors() as $error) {
         echo "\t", $error->message;
     }
@@ -21,9 +21,6 @@ function create_related_links_html($islandora_object) {
 
     if (isset($related_links_xml_object['title'])) {
       $related_links_html .= '<h2>' . $related_links_xml_object['title'] . '</h2>';
-    }
-    else {
-      $related_links_html .= '<h2>Related Links</h2>';
     }
 
     foreach ($related_links_xml_object->children() as $xml_child) {
