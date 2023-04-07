@@ -5,7 +5,7 @@
  * A collection of helper functions that process data for display
  */
 
-include_once('/usr/share/drupal7/sites/all/libraries/htmlpurifier/library/HTMLPurifier.auto.php');
+include_once('sites/all/libraries/htmlpurifier/library/HTMLPurifier.auto.php');
 
 // Parses the RELATED-LINKS XML file and turns it into HTML
 function create_related_links_html($islandora_object) {
